@@ -40,14 +40,12 @@ st.markdown("""
     
     [data-testid="stFileUploader"] section { 
         padding: 1.5rem !important;
-        /* Liquid Glass Properties */
         background: rgba(20, 24, 35, 0.45) !important;
         backdrop-filter: blur(16px) saturate(180%);
         -webkit-backdrop-filter: blur(16px) saturate(180%);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 1rem;
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        
         transition: all 0.3s ease;
         display: flex;
         align-items: center;
@@ -103,14 +101,12 @@ st.markdown("""
     .stTextArea textarea {
         font-size: 1rem;
         line-height: 1.7;
-        /* Liquid Glass Properties */
         background: rgba(20, 24, 35, 0.45);
         backdrop-filter: blur(16px) saturate(180%);
         -webkit-backdrop-filter: blur(16px) saturate(180%);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 1rem;
         box-shadow: inset 0 2px 15px rgba(0, 0, 0, 0.2);
-        
         padding: 1.25rem;
         color: rgba(255, 255, 255, 0.9);
         overflow-y: hidden !important; 
@@ -123,7 +119,7 @@ st.markdown("""
         box-shadow: inset 0 2px 15px rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 255, 255, 0.05);
     }
 
-    /* 5. Glass Buttons */
+    /* 5. Glass Buttons (Native Download Button) */
     [data-testid="stDownloadButton"] button {
         height: 46px !important;
         min-height: 46px !important;
@@ -131,7 +127,6 @@ st.markdown("""
         padding: 0 !important;
         margin: 0 !important;
         
-        /* Liquid Glass Properties */
         background: rgba(255, 255, 255, 0.03);
         backdrop-filter: blur(16px);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -140,13 +135,13 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease;
         letter-spacing: 0.5px;
+        font-weight: 400;
     }
     
     [data-testid="stDownloadButton"] button:hover {
         border-color: rgba(255, 255, 255, 0.3);
         background: rgba(255, 255, 255, 0.08);
         color: #fff;
-        transform: translateY(-1px);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
     </style>
@@ -190,7 +185,6 @@ if "transcript" in st.session_state:
     with col1:
         safe_text = json.dumps(edited_text)
         
-        # iframe CSS updated to match the Glassmorphism buttons
         copy_code = f"""
         <style>
         body {{ 
@@ -222,7 +216,6 @@ if "transcript" in st.session_state:
             border-color: rgba(255, 255, 255, 0.3);
             background: rgba(255, 255, 255, 0.08);
             color: #fff;
-            transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }}
         .copy-btn.success {{
@@ -249,7 +242,8 @@ if "transcript" in st.session_state:
         }}
         </script>
         """
-        components.html(copy_code, height=48)
+        # Height strictly locked to 46px to match native button
+        components.html(copy_code, height=46)
 
     with col2:
         clean_text = re.sub(r'[^\w\s]', '', edited_text)
