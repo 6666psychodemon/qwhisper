@@ -40,7 +40,7 @@ st.markdown("""
     }
 
     [data-testid="stFileUploader"] section:not(:has([data-testid="stUploadedFile"]))::before {
-        content: "Кидай файл сюда или нажми для выбора \\A0\\A0 • \\A0\\A0 mp3, wav, m4a, flac до 25MB";
+        content: "Drop file here or click to browse \\A0\\A0 • \\A0\\A0 mp3, wav, m4a, flac up to 25MB";
         display: block;
         text-align: left;
         color: #8b8f9e;
@@ -126,18 +126,18 @@ if uploaded_file:
         st.session_state.pop("transcript", None) 
         st.session_state.last_file_id = file_id
         
-        with st.spinner("Расшифровываю..."):
+        with st.spinner("Transcribing..."):
             try:
                 transcription = client.audio.transcriptions.create(
                     file=(uploaded_file.name, uploaded_file.read()),
                     model="whisper-large-v3",
-                    language="ru",
+                    language="en", # You can change this back to "ru" if the audio is still in Russian
                     response_format="text"
                 )
                 st.session_state.transcript = transcription
                 st.rerun() 
             except Exception as e:
-                st.error(f"Ошибка: {e}")
+                st.error(f"Error: {e}")
                 st.stop()
 
 if "transcript" in st.session_state:
@@ -182,18 +182,18 @@ if "transcript" in st.session_state:
             color: #28a745;
         }}
         </style>
-        <button id="copyBtn" class="copy-btn" onclick="copyToClipboard()">В буфер</button>
+        <button id="copyBtn" class="copy-btn" onclick="copyToClipboard()">Copy</button>
         
         <script>
         function copyToClipboard() {{
             const text = {safe_text};
             navigator.clipboard.writeText(text).then(() => {{
                 const btn = document.getElementById("copyBtn");
-                btn.innerText = "✓ Скопировано";
+                btn.innerText = "✓ Copied";
                 btn.classList.add("success");
                 
                 setTimeout(() => {{
-                    btn.innerText = "В буфер";
+                    btn.innerText = "Copy";
                     btn.classList.remove("success");
                 }}, 2000);
             }});
@@ -203,13 +203,12 @@ if "transcript" in st.session_state:
         components.html(copy_code, height=42)
 
     with col2:
-        # Strip punctuation, split into words, and join the first three with hyphens
         clean_text = re.sub(r'[^\w\s]', '', edited_text)
         words = clean_text.split()
         file_name_prefix = "-".join(words[:3]) if words else "transcript"
         
         st.download_button(
-            label="Скачать .txt", 
+            label="Download .txt", 
             data=edited_text, 
             file_name=f"{file_name_prefix}.txt",
             use_container_width=True
