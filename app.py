@@ -131,7 +131,6 @@ if uploaded_file:
                 transcription = client.audio.transcriptions.create(
                     file=(uploaded_file.name, uploaded_file.read()),
                     model="whisper-large-v3",
-                    language="en", 
                     response_format="text"
                 )
                 st.session_state.transcript = transcription
