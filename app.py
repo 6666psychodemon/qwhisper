@@ -3,12 +3,12 @@ from groq import Groq
 import streamlit.components.v1 as components
 import json
 import os
+import re
 
 st.set_page_config(page_title="whisperfleet", page_icon="🎙️")
 
 st.markdown("""
     <style>
-    /* 1. Nuke the invisible Streamlit header menu that eats top space */
     header[data-testid="stHeader"] {
         display: none !important;
     }
@@ -19,12 +19,10 @@ st.markdown("""
         max-width: 800px; 
     }
 
-    /* 2. Clean up native uploader garbage */
     [data-testid="stFileUploader"] section button { display: none; }
     [data-testid="stFileUploader"] section div[data-testid="stMarkdownContainer"] { display: none; }
     [data-testid="stFileUploader"] small { display: none !important; }
     
-    /* 3. Modernize the Dropzone container */
     [data-testid="stFileUploader"] section { 
         padding: 1.25rem 1.5rem !important;
         background-color: #16181f; 
@@ -41,7 +39,6 @@ st.markdown("""
         border-color: #5c627a;
     }
 
-    /* 4. Left-aligned empty state text (merged with file info) */
     [data-testid="stFileUploader"] section:not(:has([data-testid="stUploadedFile"]))::before {
         content: "Кидай файл сюда или нажми для выбора \\A0\\A0 • \\A0\\A0 mp3, wav, m4a, flac до 25MB";
         display: block;
@@ -52,7 +49,6 @@ st.markdown("""
         cursor: pointer;
     }
 
-    /* 5. Custom File Chip styling */
     [data-testid="stUploadedFile"] {
         margin: 0 !important; 
         background-color: #1a1c23 !important;
@@ -63,7 +59,6 @@ st.markdown("""
         max-width: 70%; 
     }
 
-    /* Hide ugly default icon and inject a modern one */
     [data-testid="stUploadedFile"] svg {
         display: none !important;
     }
@@ -80,10 +75,8 @@ st.markdown("""
 
     .stApp { background-color: #0E1117; }
     
-    /* Hide text area label */
     [data-testid="stTextArea"] label { display: none !important; }
     
-    /* 6. True Auto-Height for Text Area */
     .stTextArea textarea {
         font-size: 1rem;
         line-height: 1.6;
@@ -101,7 +94,6 @@ st.markdown("""
         box-shadow: none;
     }
 
-    /* Button Height Synchronization */
     [data-testid="stDownloadButton"] button {
         height: 42px !important;
         min-height: 42px !important;
@@ -133,8 +125,6 @@ if uploaded_file:
     if "last_file_id" not in st.session_state or st.session_state.last_file_id != file_id:
         st.session_state.pop("transcript", None) 
         st.session_state.last_file_id = file_id
-        # Cache the filename safely in session state so the download button never breaks
-        st.session_state.file_base_name = os.path.splitext(uploaded_file.name)[0]
         
         with st.spinner("Расшифровываю..."):
             try:
@@ -213,11 +203,14 @@ if "transcript" in st.session_state:
         components.html(copy_code, height=42)
 
     with col2:
-        # Retrieve the cached filename instead of relying on the live uploaded_file object
-        base_name = st.session_state.get("file_base_name", "audio")
+        # Strip punctuation, split into words, and join the first three with hyphens
+        clean_text = re.sub(r'[^\w\s]', '', edited_text)
+        words = clean_text.split()
+        file_name_prefix = "-".join(words[:3]) if words else "transcript"
+        
         st.download_button(
             label="Скачать .txt", 
             data=edited_text, 
-            file_name=f"{base_name}_transcript.txt",
+            file_name=f"{file_name_prefix}.txt",
             use_container_width=True
         )
