@@ -77,6 +77,7 @@ st.markdown("""
     
     [data-testid="stTextArea"] label { display: none !important; }
     
+    /* Removed field-sizing, relying on Python calculation for exact height */
     .stTextArea textarea {
         font-size: 1rem;
         line-height: 1.6;
@@ -84,8 +85,6 @@ st.markdown("""
         border: 1px solid #2e323e;
         border-radius: 0.5rem;
         padding: 1rem;
-        field-sizing: content; 
-        min-height: 64px !important; 
         color: #e2e4e9;
     }
     
@@ -131,7 +130,7 @@ if uploaded_file:
                 transcription = client.audio.transcriptions.create(
                     file=(uploaded_file.name, uploaded_file.read()),
                     model="whisper-large-v3",
-                    language="en", # You can change this back to "ru" if the audio is still in Russian
+                    language="en", 
                     response_format="text"
                 )
                 st.session_state.transcript = transcription
@@ -141,7 +140,15 @@ if uploaded_file:
                 st.stop()
 
 if "transcript" in st.session_state:
-    edited_text = st.text_area("", value=st.session_state.transcript)
+    text_content = st.session_state.transcript
+    
+    # Calculate dynamic height based on text volume
+    # ~85 characters per line in an 800px container, plus explicit line breaks
+    estimated_lines = (len(text_content) // 85) + text_content.count('\n') + 1
+    # 24px per line + 45px buffer for padding to prevent scrollbars
+    dynamic_height = max(100, estimated_lines * 24 + 45)
+
+    edited_text = st.text_area("", value=text_content, height=dynamic_height)
     
     col1, col2 = st.columns(2)
     
