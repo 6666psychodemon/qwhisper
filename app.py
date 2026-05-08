@@ -27,13 +27,13 @@ st.markdown("""
     /* 3. Modernize the Dropzone container */
     [data-testid="stFileUploader"] section { 
         padding: 1.25rem 1.5rem !important;
-        background-color: #16181f; /* Slight contrast from deep black bg */
+        background-color: #16181f; 
         border: 1px solid #2e323e;
         border-radius: 0.75rem;
         transition: all 0.2s ease;
         display: flex;
         align-items: center;
-        justify-content: flex-start; /* Left alignment */
+        justify-content: flex-start; 
         min-height: 72px;
     }
     
@@ -59,7 +59,7 @@ st.markdown("""
         border: 1px solid #3b3f4f !important;
         border-radius: 0.5rem !important;
         padding: 0.5rem 1rem !important;
-        width: auto !important; /* Stop it from sticking to the right */
+        width: auto !important; 
         max-width: 70%; 
     }
 
@@ -69,7 +69,7 @@ st.markdown("""
     }
     
     [data-testid="stUploadedFile"] > div:first-child::before {
-        content: "∿"; /* Modern minimal wave symbol */
+        content: "∿"; 
         color: #a8b1c4;
         font-size: 1.4rem;
         line-height: 0;
@@ -91,7 +91,7 @@ st.markdown("""
         border: 1px solid #2e323e;
         border-radius: 0.5rem;
         padding: 1rem;
-        field-sizing: content; /* Modern CSS: perfectly wraps the text volume */
+        field-sizing: content; 
         min-height: 64px !important; 
         color: #e2e4e9;
     }
@@ -133,6 +133,8 @@ if uploaded_file:
     if "last_file_id" not in st.session_state or st.session_state.last_file_id != file_id:
         st.session_state.pop("transcript", None) 
         st.session_state.last_file_id = file_id
+        # Cache the filename safely in session state so the download button never breaks
+        st.session_state.file_base_name = os.path.splitext(uploaded_file.name)[0]
         
         with st.spinner("Расшифровываю..."):
             try:
@@ -211,7 +213,8 @@ if "transcript" in st.session_state:
         components.html(copy_code, height=42)
 
     with col2:
-        base_name = os.path.splitext(uploaded_file.name)[0]
+        # Retrieve the cached filename instead of relying on the live uploaded_file object
+        base_name = st.session_state.get("file_base_name", "audio")
         st.download_button(
             label="Скачать .txt", 
             data=edited_text, 
