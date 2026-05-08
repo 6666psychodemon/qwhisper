@@ -5,7 +5,7 @@ import json
 import os
 import re
 
-st.set_page_config(page_title="whisperfleet", page_icon="🎙️")
+st.set_page_config(page_title="qwhisper", page_icon="🎙️")
 
 st.markdown("""
     <style>
@@ -77,7 +77,6 @@ st.markdown("""
     
     [data-testid="stTextArea"] label { display: none !important; }
     
-    /* Removed field-sizing, relying on Python calculation for exact height */
     .stTextArea textarea {
         font-size: 1rem;
         line-height: 1.6;
@@ -86,6 +85,8 @@ st.markdown("""
         border-radius: 0.5rem;
         padding: 1rem;
         color: #e2e4e9;
+        overflow-y: hidden !important; /* Force kills the scrollbar */
+        padding-bottom: 24px !important; /* Bakes in the extra space below */
     }
     
     .stTextArea textarea:focus {
@@ -142,11 +143,12 @@ if uploaded_file:
 if "transcript" in st.session_state:
     text_content = st.session_state.transcript
     
-    # Calculate dynamic height based on text volume
-    # ~85 characters per line in an 800px container, plus explicit line breaks
-    estimated_lines = (len(text_content) // 85) + text_content.count('\n') + 1
-    # 24px per line + 45px buffer for padding to prevent scrollbars
-    dynamic_height = max(100, estimated_lines * 24 + 45)
+    # Calculate lines per paragraph to account for actual line breaks
+    # Assume a very conservative 65 characters per line before word wrap
+    num_lines = sum((len(paragraph) // 65) + 1 for paragraph in text_content.split('\n'))
+    
+    # Base height per line (approx 26px) + overhead for padding
+    dynamic_height = max(100, (num_lines * 26) + 40)
 
     edited_text = st.text_area("", value=text_content, height=dynamic_height)
     
